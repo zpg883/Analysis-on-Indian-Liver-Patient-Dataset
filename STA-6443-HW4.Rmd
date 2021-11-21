@@ -1,14 +1,89 @@
 ---
 title: "STA 6443 HW4"
 author: "Hannah Haley & Richard Tarbell"
-date: "11/11/2021"
+date: "11/21/2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse); library(DescTools); library(car); library(MASS); library(olsrr)
 ```
 
 
+```{r setup, include=FALSE}
+liver <- read_csv("data/liver.csv")
+sleep <- read.csv("data/sleep.csv")
+```
 
+
+## **Exercise 1**
+
+The liver data set is a subset of the ILPD (Indian Liver Patient Dataset) data set. It contains the first 10 variables described on the UCI Machine Learning Repository and a LiverPatient variable (indicating whether or not the individual is a liver patient. People with active liver disease are coded as LiverPatient=1 and people without disease are coded LiverPatient=0) for adults in the data set. Adults here are defined to be individuals who are at least 18 years of age. It is possible that there will be different significant predictors of being a liver patient for 
+adult females and adult males.
+
+### **a)**
+For only females in the data set, find and specify the best set of predictors via stepwise selection with AIC 
+criteria for a logistic regression model predicting whether a female is a liver patient. 
+NOTE: Specifying the full model using “LiverPatient~., data=…” will give an error message (due to only one 
+level of factor – Female – in the data, I guess so). Suggest typing all variables manually for the full model
+```{r}
+
+```
+
+### **b)** Comment on the significance of parameter estimates under significance level alpha=0.1, what HosmerLemeshow’s test tells us about goodness of fit, and point out any issues with diagnostics by checking 
+residual plots and cook’s distance plot (with cut-off 0.25).
+```{r}
+
+```
+
+### **c)**
+Interpret relationships between predictors in the final model and the odds of an adult female being a liver 
+patient. (based on estimated Odds Ratio). 
+NOTE: stepwise selection with AIC criteria can be performed by default step() function in R.
+```{r}
+
+```
+
+## **Exercise 2:**
+Repeat exercise 1 for males. In addition to the previous questions, also d) comment on how the models for adult 
+females and adult males differ. Use significance level alpha=0.1
+
+NOTE: You will get an error message “glm.fit: fitted probabilities numerically 0 or 1 occurred” for this run. Ignore this and use the result for the interpretation. I will explain what this error means in Week 14 videos.
+```{r}
+
+```
+
+## **Exercise 3:**
+
+Use the sleep data set which originates from http://lib.stat.cmu.edu/datasets/sleep. maxlife10 is 0 if the species maximum life span is less than 10 years and 1 if its maximum life span is greater than or equal to 10 years.
+Consider finding the best logistic model for predicting the probability that a species' maximum lifespan will be at least 10 years. Consider all 6 variables as candidates (do not include species) and two index variables of them are categorical in nature. Treat two index variables as categorical variables (e.g. ignore the fact that they are 
+ordinal). Use significance level alpha=0.1
+
+### **a)**
+First find and specify the best set of predictors via stepwise selection with AIC criteria.
+```{r}
+
+```
+
+### **b)**
+Comment on the significance of parameter estimates, what Hosmer-Lemeshow’s test tells us about 
+goodness of fit, and point out any issues with diagnostics by checking residual plots and cook’s distance plot. Do not remove influential points but just make comments on suspicious observations.
+```{r}
+
+```
+
+### **c)**
+Interpret what the model tells us about relationships between the predictors and the odds of a species' 
+maximum lifespan being at least 10 years.
+NOTE: stepwise selection with BIC criteria can be performed by step() function by adding an option k=log(n), where n is a sample size. No need to refit the model with only significant variables. Just use the final model from step() function, and for part (b), make comments based on this. But, for part (c), interpret the Odds Ratio only for significant level and no need to interpret other insignificant ones.
+```{r}
+
+```
+
+## **Exercise 4:**
+The index variables in the data set are ordinal, meaning they are categorical and they have a natural ordering. If we treat an index variable as a continuous variable, this will imply a linear change as the index changes. Repeat Exercise 3 by treating two index variables as continuous variables. Use significance level alpha=0.1
+```{r}
+
+```
 
