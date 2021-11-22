@@ -1,13 +1,13 @@
 ---
 title: "STA 6443 HW4"
 author: "Hannah Haley & Richard Tarbell"
-date: "11/21/2021"
+date: "11/22/2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse); library(DescTools); library(car); library(MASS); library(olsrr)
+library(tidyverse); library(DescTools); library(car); library(MASS); library(olsrr);library(ResourceSelection)
 ```
 
 
@@ -28,14 +28,53 @@ criteria for a logistic regression model predicting whether a female is a liver 
 NOTE: Specifying the full model using “LiverPatient~., data=…” will give an error message (due to only one 
 level of factor – Female – in the data, I guess so). Suggest typing all variables manually for the full model
 ```{r}
+str(liver)
 
+liverFemale = liver[which(liver$Gender == "Female"),]
+glm.null.female = glm(LiverPatient ~ 1, data = liverFemale, family = binomial) #null model: no predictor
+glm.full.female = glm(LiverPatient ~ Age+ TB+ DB+ Alkphos+ Alamine+ Aspartate+ TP+ ALB, data = liverFemale, family = binomial) # full model: all predictors
+
+```
+```{r}
+#Stepwise based on AIC for Female
+stepwise.Female <- step(glm.full.female, scope = list(upper=glm.full.female), direction="both",test="Chisq", trace = F) 
+summary(stepwise.Female)
 ```
 
 ### **b)** Comment on the significance of parameter estimates under significance level alpha=0.1, what HosmerLemeshow’s test tells us about goodness of fit, and point out any issues with diagnostics by checking 
 residual plots and cook’s distance plot (with cut-off 0.25).
+
+**Comments:**
+The variables *DB* and *Aspartate* both have values below a `0.1` significance level of `0.0905` and `0.0726`, respectfully, making them the significant predictors for Female liver patients. Both of these predictors have a high chance of a relationship between Females patients and active liver disease. 
+
 ```{r}
+hoslem.test(stepwise.Female$y, fitted(stepwise.Female), g=10)
+```
+**Observation:**
+The Hosmer and Lemeshow goodness of fit test provides a p-value of `0.4579` which is above the `0.1` significance level making the model **FINISH THIS STATEMENT**
+```{r}
+resid.d<-residuals(stepwise.Female, type = "deviance")
+resid.p<-residuals(stepwise.Female, type = "pearson")
+std.res.d<-residuals(stepwise.Female, type = "deviance")/sqrt(1 - hatvalues(stepwise.Female)) # standardized deviance residuals
+std.res.p <-residuals(stepwise.Female, type = "pearson")/sqrt(1 - hatvalues(stepwise.Female)) # standardized pearson residuals
+
+par(mfrow=c(1,2))
+plot(std.res.d[stepwise.Female$model$LiverPatient==0], col = "red", ylim = c(-3.5,3.5), ylab = "std. deviance residuals", xlab = "ID")
+points(std.res.d[stepwise.Female$model$LiverPatient==1], col = "blue")
+
+plot(std.res.p[stepwise.Female$model$LiverPatient==0], col = "red", ylim = c(-3.5,3.5), ylab = "std. Pearson residuals", xlab = "ID")
+points(std.res.p[stepwise.Female$model$LiverPatient==1], col = "blue")
 
 ```
+**Observation:**
+
+```{r}
+plot(stepwise.Female, which = 4, id.n = 5)
+```
+```{r}
+(inf.id=which(cooks.distance(stepwise.Female)>0.25))
+```
+**Observation:**
 
 ### **c)**
 Interpret relationships between predictors in the final model and the odds of an adult female being a liver 
@@ -50,12 +89,25 @@ Repeat exercise 1 for males. In addition to the previous questions, also d) comm
 females and adult males differ. Use significance level alpha=0.1
 
 NOTE: You will get an error message “glm.fit: fitted probabilities numerically 0 or 1 occurred” for this run. Ignore this and use the result for the interpretation. I will explain what this error means in Week 14 videos.
+
+**a)**
 ```{r}
 
 ```
+**b)**
+```{r}
+
+```
+**c)**
+```{r}
+
+```
+**d)**
+Comment on how the models for adult 
+females and adult males differ. Use significance level alpha=0.1
+**Comment:**
 
 ## **Exercise 3:**
-
 Use the sleep data set which originates from http://lib.stat.cmu.edu/datasets/sleep. maxlife10 is 0 if the species maximum life span is less than 10 years and 1 if its maximum life span is greater than or equal to 10 years.
 Consider finding the best logistic model for predicting the probability that a species' maximum lifespan will be at least 10 years. Consider all 6 variables as candidates (do not include species) and two index variables of them are categorical in nature. Treat two index variables as categorical variables (e.g. ignore the fact that they are 
 ordinal). Use significance level alpha=0.1
