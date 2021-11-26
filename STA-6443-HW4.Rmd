@@ -51,7 +51,8 @@ The variables *DB* and *Aspartate* both have values below a `0.1` significance l
 hoslem.test(stepwise.Female$y, fitted(stepwise.Female), g=10)
 ```
 **Observation:**
-The Hosmer and Lemeshow goodness of fit test provides a p-value of `0.4579` which is above the `0.1` significance level making the model **FINISH THIS STATEMENT**
+The Hosmer and Lemeshow goodness of fit test provides a p-value of `0.4579` which is above the `0.1` significance level making the model adequate.
+
 ```{r}
 resid.d<-residuals(stepwise.Female, type = "deviance")
 resid.p<-residuals(stepwise.Female, type = "pearson")
@@ -67,6 +68,7 @@ points(std.res.p[stepwise.Female$model$LiverPatient==1], col = "blue")
 
 ```
 **Observation:**
+The diagnostic plots follow a similar pattern in both the standard deviance residual and Pearson residuals. The red line does not stray away from linearity and there is no large outstanding values it does not violate any assumptions. 
 
 ```{r}
 plot(stepwise.Female, which = 4, id.n = 5)
@@ -75,14 +77,25 @@ plot(stepwise.Female, which = 4, id.n = 5)
 (inf.id=which(cooks.distance(stepwise.Female)>0.25))
 ```
 **Observation:**
+There is no observation with a Cook's distance larger than `0.25`. 
 
 ### **c)**
 Interpret relationships between predictors in the final model and the odds of an adult female being a liver 
 patient. (based on estimated Odds Ratio). 
 NOTE: stepwise selection with AIC criteria can be performed by default step() function in R.
 ```{r}
-
+summary(stepwise.Female)
 ```
+**Observation:**
+The final model for Females is: $\log(p/1-p)$=`-0.32480`+`0.94479`*DB*+`0.01106`*Aspartate*
+```{r}
+OR=exp(stepwise.Female$coefficients)
+round(OR, 3)
+```
+**Observation:**
+1. As *DB* increases by `0.94479` the odds of *DB* increases by exp=`2.572.`
+2. As *Aspartate* increases by `0.01106` the odds of *Aspartate* increases by exp=`1.011`
+3. Female patients with *DB* or *Aspartate* are more likely to have liver disease that is active.
 
 ## **Exercise 2:**
 Repeat exercise 1 for males. In addition to the previous questions, also d) comment on how the models for adult 
@@ -115,6 +128,7 @@ ordinal). Use significance level alpha=0.1
 ### **a)**
 First find and specify the best set of predictors via stepwise selection with AIC criteria.
 ```{r}
+#maxlife10 is 0 if the species maximum life span is less than 10 years and 1 if its maximum life span is greater than or equal to 10 years.
 
 ```
 
