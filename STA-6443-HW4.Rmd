@@ -127,16 +127,35 @@ ordinal). Use significance level alpha=0.1
 
 ### **a)**
 First find and specify the best set of predictors via stepwise selection with AIC criteria.
-```{r}
-#maxlife10 is 0 if the species maximum life span is less than 10 years and 1 if its maximum life span is greater than or equal to 10 years.
+```{r, warning=FALSE}
+str(sleep)
 
+glm.null.sleep1 <- glm(maxlife10 ~ 1, data = sleep, family = binomial)
+
+glm.null.sleep1 <- glm(maxlife10 ~ bodyweight + brainweight + totalsleep + gestationtime + as.factor(predationindex) + as.factor(sleepexposureindex), data = sleep, family = binomial)
 ```
+```{r, warning=FALSE}
+step.sleep1 <- step(glm.null.sleep1, scope = list(upper=glm.null.sleep1), direction = "both", test = "Chisq", trace = F)
+
+summary(step.sleep1)
+```
+**Observation:**
+Significant predictor is *sleepexposure* because it has p-values below the `0.1` significance level.
 
 ### **b)**
 Comment on the significance of parameter estimates, what Hosmer-Lemeshow’s test tells us about 
 goodness of fit, and point out any issues with diagnostics by checking residual plots and cook’s distance plot. Do not remove influential points but just make comments on suspicious observations.
-```{r}
 
+**Comment:**
+Specifically the *sleepexposure* levels 3-5 have a chance of an event not happening whereas level 2 has a chance of an event happening. Still, *sleepexposure* is a significant predictor. 
+
+```{r}
+hoslem.test(step.sleep1$y, fitted(step.sleep1), g=10)
+```
+**Observation:**
+Based on the Hosmer goodness of fit test, the p-value is `0.5324` which falls above the `0.1` significance level making the model adequate. 
+```{r}
+#plots and cook's distance
 ```
 
 ### **c)**
