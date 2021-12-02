@@ -11,7 +11,7 @@ library(tidyverse); library(DescTools); library(car); library(MASS); library(ols
 ```
 
 
-```{r setup, include=FALSE}
+```{r, include=FALSE}
 liver <- read_csv("data/liver.csv")
 sleep <- read.csv("data/sleep.csv")
 ```
@@ -31,19 +31,19 @@ level of factor – Female – in the data, I guess so). Suggest typing all vari
 str(liver)
 
 liverFemale = liver[which(liver$Gender == "Female"),]
-glm.null.female = glm(LiverPatient ~ 1, data = liverFemale, family = binomial) #null model: no predictor
-glm.full.female = glm(LiverPatient ~ Age+ TB+ DB+ Alkphos+ Alamine+ Aspartate+ TP+ ALB, data = liverFemale, family = binomial) # full model: all predictors
+glm.null.female = glm(LiverPatient ~ 1, data = liverFemale, family = "binomial") #null model: no predictor
+glm.full.female = glm(LiverPatient ~ Age+ TB+ DB+ Alkphos+ Alamine+ Aspartate+ TP+ ALB, data = liverFemale, family = "binomial") # full model: all predictors
 
 ```
 ```{r}
 #Stepwise based on AIC for Female
-stepwise.Female <- step(glm.full.female, scope = list(upper=glm.full.female), direction="both",test="Chisq", trace = F) 
+stepwise.Female <- step(glm.null.female, scope = list(upper=glm.full.female), direction="both",test="Chisq", trace = F) 
 summary(stepwise.Female)
 ```
 
 ### b)
 
-Comment on the significance of parameter estimates under significance level alpha=0.1, what HosmerLemeshow’s test tells us about goodness of fit, and point out any issues with diagnostics by checking 
+Comment on the significance of parameter estimates under significance level alpha=0.1, what Hosmer-Lemeshow’s test tells us about goodness of fit, and point out any issues with diagnostics by checking 
 residual plots and cook’s distance plot (with cut-off 0.25).
 
 **Comments:**
@@ -107,20 +107,83 @@ NOTE: You will get an error message “glm.fit: fitted probabilities numerically
 
 ### a)
 ```{r}
-
+liverMale = liver[which(liver$Gender == "Male"),]
+glm.null.male = glm(LiverPatient ~ 1, data = liverMale, family = "binomial")
+glm.full.male = glm(LiverPatient ~ Age + TB + DB + Alkphos + Alamine + Aspartate + TP + ALB, data=liverMale, family = "binomial")
 ```
-### b)
+
 ```{r}
+stepwise.Male <- step(glm.null.male, scope = list(upper=glm.full.male),
+                      direction="both", test="Chisq", trace = F)
+summary(stepwise.Male)
+```
+
+### b)
+**Comments:**
+All the values from the given stepwise selection have p-values lower than the significance level of 0.1. This allows us to state that there is a significant relationship between `DB`, `Alamine`, `Age`, and `Alkphos` in determining if a Male liver pationa has a liver disease.
+```{r}
+hoslem.test(stepwise.Male$y, fitted(stepwise.Male), g=10)
+```
+```{r}
+resid.d.Male<-residuals(stepwise.Male, type = "deviance")
+resid.p.Male<-residuals(stepwise.Male, type = "pearson")
+std.res.d.Male<-residuals(stepwise.Male, type = "deviance")/sqrt(1 - hatvalues(stepwise.Male)) 
+std.res.p.Male <-residuals(stepwise.Male, type = "pearson")/sqrt(1 - hatvalues(stepwise.Male))
+
+par(mfrow=c(1,2))
+plot(std.res.d.Male[stepwise.Male$model$LiverPatient==0], col = "red", 
+     ylim = c(-3.5,3.5), ylab = "std. deviance residuals", xlab = "ID")
+points(std.res.d.Male[stepwise.Male$model$LiverPatient==1], col = "blue")
+
+plot(std.res.p.Male[stepwise.Male$model$LiverPatient==0], col = "red", 
+     ylim = c(-3.5,3.5), ylab = "std. Pearson residuals", xlab = "ID")
+points(std.res.p.Male[stepwise.Male$model$LiverPatient==1], col = "blue")
 
 ```
+```{r}
+plot(stepwise.Male, which = 4, id.n=5 )
+```
+```{r}
+(inf.id.M = which(cooks.distance(stepwise.Male)>0.25))
+
+glm.male.final = glm(LiverPatient ~ DB + Alamine + Age + Alkphos, data = liverMale[-inf.id.M, ], family = "binomial")
+```
+
+```{r}
+plot(glm.male.final, which = 4, id.n=5 )
+```
+**Observation**
+With our Hosmer-Lemeshow test we receieved a p-value greater than our significance level of 0.1, which means we dod not reject H$_{0}$ and we assume our model is adequate. Now looking at our residual plots there is a parallel pattern, which implies there is a similar esitmated probababilities for all observations. Finally in the cooks plot we do see one observation with a Cook's distance larger than 0.25, observation 86.
+
+
 ### c)
 ```{r}
-
+summary(glm.male.final)
 ```
+```{r}
+OR.M = exp(glm.male.final$coefficients)
+round(OR.M,3)
+```
+**Observation**
+As our final model is $\log(p/1-p)$ = `-1.902754` + `0.573104`\*`DB` + `0.015850`\*`Alamine` + `0.020418`\*`Age` + `0.003744`\*`Alkphos` we can compare it to the output of the Odds Ratios. 
+
+The odds of a male liver patient having active liver disease increases by a fact of `1.774` with every unit increase in `DB`.
+
+Similary if we assume all other variables remain constant the odds of liver disease increase by a factor of the following,
+
+* odds of liver disease increase by a factor of `1.016` with a one unit increase in `Alamine`
+* odds of liver disease increase by a factor of `1.021` with a one unit increase in `Age`
+* odds of liver disease increase by a factor of `1.004` with a one unit increase in `Alkphos`
+
+
 ### d)
 Comment on how the models for adult 
 females and adult males differ. Use significance level alpha=0.1
 **Comment:**
+
+When comparing the models for females and males we note that the females only have two significant predictors (`DB` and `Aspartate`) while the males have four significant predictors (`DB`, `Alamine`, `Age`, and `Alkphos`). With each of these predictors increasing the odds of a patient having liver disease it may be easier to predict when a male is at risk easier than a female, simply because of the amount of predictors used.
+
+
 
 ## Exercise 3:
 Use the sleep data set which originates from http://lib.stat.cmu.edu/datasets/sleep. maxlife10 is 0 if the species maximum life span is less than 10 years and 1 if its maximum life span is greater than or equal to 10 years.
