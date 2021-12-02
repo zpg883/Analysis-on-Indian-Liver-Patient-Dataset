@@ -330,10 +330,10 @@ As our final model is $\log(p/1-p)$ = `-6.16387` + `0.06018`\*`brainweight` + `0
 
 The odds of a species maximum lifespan being at least 10 years increases by a fact of `1.062` with every unit increase in `brainweight`.
 
-Similary if we assume all other variables remain constant the odds of liver disease increase by a factor of the following,
+Similary if we assume all other variables remain constant the odds of a species maximum lifespan being at least 10 years increase by a factor of the following,
 
 * odds of a species maximum lifespan being at least 10 years increase by a factor of `1.433` with a one unit increase in `totalsleep`
-* odds of a species maximum lifespan being at least 10 years increase by a factor of `83.188` with a one unit increase in `sleepexposureindex`
-* odds of a species maximum lifespan being at least 10 years decrease by a factor of `0.034` with a one unit decrease in `predationindex`
+* odds of a species maximum lifespan being at least 10 years increases by a factor of `83.188` with a one unit increase in `sleepexposureindex`
+* odds of a species maximum lifespan being at least 10 years decreases by a factor of `0.034` with a one unit increase in `predationindex`
 
 
