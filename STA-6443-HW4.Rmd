@@ -76,7 +76,7 @@ The diagnostic plots follow a similar pattern in both the standard deviance resi
 plot(stepwise.Female, which = 4, id.n = 5)
 ```
 ```{r}
-(inf.id=which(cooks.distance(stepwise.Female)>0.25))
+(inf.id.1=which(cooks.distance(stepwise.Female)>0.25))
 ```
 **Observation:**
 There is no observation with a Cook's distance larger than `0.25.` 
@@ -144,9 +144,9 @@ points(std.res.p.Male[stepwise.Male$model$LiverPatient==1], col = "blue")
 plot(stepwise.Male, which = 4, id.n=5 )
 ```
 ```{r}
-(inf.id.M = which(cooks.distance(stepwise.Male)>0.25))
+(inf.id.2 = which(cooks.distance(stepwise.Male)>0.25))
 
-glm.male.final = glm(LiverPatient ~ DB + Alamine + Age + Alkphos, data = liverMale[-inf.id.M, ], family = "binomial")
+glm.male.final = glm(LiverPatient ~ DB + Alamine + Age + Alkphos, data = liverMale[-inf.id.2, ], family = "binomial")
 ```
 
 ```{r}
@@ -177,10 +177,8 @@ Similary if we assume all other variables remain constant the odds of liver dise
 
 
 ### d)
-Comment on how the models for adult 
-females and adult males differ. Use significance level alpha=0.1
+Comment on how the models for adult females and adult males differ. Use significance level alpha=0.1
 **Comment:**
-
 When comparing the models for females and males we note that the females only have two significant predictors (`DB` and `Aspartate`) while the males have four significant predictors (`DB`, `Alamine`, `Age`, and `Alkphos`). With each of these predictors increasing the odds of a patient having liver disease it may be easier to predict when a male is at risk easier than a female, simply because of the amount of predictors used.
 
 
@@ -197,10 +195,10 @@ str(sleep)
 
 glm.null.sleep1 <- glm(maxlife10 ~ 1, data = sleep, family = binomial)
 
-glm.null.sleep1 <- glm(maxlife10 ~ bodyweight + brainweight + totalsleep + gestationtime + as.factor(predationindex) + as.factor(sleepexposureindex), data = sleep, family = binomial)
+glm.full.sleep1 <- glm(maxlife10 ~ bodyweight + brainweight + totalsleep + gestationtime + as.factor(predationindex) + as.factor(sleepexposureindex), data = sleep, family = binomial)
 ```
 ```{r, warning=FALSE}
-step.sleep1 <- step(glm.null.sleep1, scope = list(upper=glm.null.sleep1), direction = "both", test = "Chisq", trace = F)
+step.sleep1 <- step(glm.null.sleep1, scope = list(upper=glm.full.sleep1), direction = "both", test = "Chisq", trace = F)
 
 summary(step.sleep1)
 ```
@@ -237,7 +235,7 @@ points(std.res.p[step.sleep1$model$maxlife10==1], col = "blue")
 plot(step.sleep1, which = 4, id.n = 5)
 ```
 ```{r}
-(inf.id=which(cooks.distance(step.sleep1)>0.25))
+(inf.id.3=which(cooks.distance(step.sleep1)>0.25))
 ```
 
 **Observation:**
@@ -250,7 +248,7 @@ Interpret what the model tells us about relationships between the predictors and
 maximum lifespan being at least 10 years.
 NOTE: stepwise selection with BIC criteria can be performed by step() function by adding an option k=log(n), where n is a sample size. No need to refit the model with only significant variables. Just use the final model from step() function, and for part (b), make comments based on this. But, for part (c), interpret the Odds Ratio only for significant level and no need to interpret other insignificant ones.
 ```{r}
-glm.sleep.final = glm(maxlife10 ~ brainweight + totalsleep + as.factor(predationindex) + as.factor(sleepexposureindex), data = sleep[-inf.id], family = binomial)
+glm.sleep.final = glm(maxlife10 ~ brainweight + totalsleep + as.factor(predationindex) + as.factor(sleepexposureindex), data = sleep[-inf.id.3], family = "binomial")
 
 summary(glm.sleep.final)
 
@@ -264,19 +262,78 @@ Based on the Odds Ratio, *sleepexposure2* has a value of `1.480500e+02.` Therefo
 ## Exercise 4:
 The index variables in the data set are ordinal, meaning they are categorical and they have a natural ordering. If we treat an index variable as a continuous variable, this will imply a linear change as the index changes. Repeat Exercise 3 by treating two index variables as continuous variables. Use significance level alpha=0.1
 
-##a)
+###a)
 ```{r}
+glm.null.sleep2 <- glm(maxlife10 ~ 1, data = sleep, family = "binomial")
+
+glm.full.sleep2 <- glm(maxlife10 ~ bodyweight+brainweight+totalsleep+gestationtime
+                       + predationindex + sleepexposureindex, data = sleep, family = "binomial")
+
+step.sleep2 <- step(glm.null.sleep2, scope = list(upper=glm.full.sleep2),
+                    direction="both",test="Chisq", trace = F)
 
 ```
+```{r}
+summary(step.sleep2)
+```
 **Observation:**
+With the stepwise selection treating the two index variables as continous variables we find the best predictors to be `brainweight`, `totalsleep`, `sleepexposureindex`, and `predationindex`.
+
 ### b)
-```{r}
+As mentioned in part A `brainweight`, `totalsleep`, `sleepexposureindex`, and `predationindex` have p-values lower than the significance level of 0.1. Implying they all have a significant relationship when determining `maxlife10`.
 
+```{r}
+hoslem.test(step.sleep2$y, fitted(step.sleep2), g=10)
 ```
-**Observation:**
+```{r}
+resid.d<-residuals(step.sleep2, type = "deviance")
+resid.p<-residuals(step.sleep2, type = "pearson")
+std.res.d<-residuals(step.sleep2, type = "deviance")/sqrt(1 - hatvalues(step.sleep2)) # standardized deviance residuals
+std.res.p <-residuals(step.sleep2, type = "pearson")/sqrt(1 - hatvalues(step.sleep2)) # standardized pearson residuals
+
+par(mfrow=c(1,2))
+plot(std.res.d[step.sleep2$model$maxlife10==0], col = "red", 
+     ylim = c(-3.5,3.5), ylab = "std. deviance residuals", xlab = "ID")
+points(std.res.d[step.sleep2$model$maxlife10==1], col = "blue")
+
+plot(std.res.p[step.sleep2$model$maxlife10==0], col = "red", 
+     ylim = c(-3.5,3.5), ylab = "std. Pearson residuals", xlab = "ID")
+points(std.res.p[step.sleep2$model$maxlife10==1], col = "blue")
+```
+
+```{r}
+plot(step.sleep2, which=4, id.n=5)
+```
+
+
+**Observation:** Based on the Hosmer-Lemeshow test our model does appear to be adequate since the p-value is >0.1 and we do not have enough significant. The residual plots show overlap in the red (`maxlife10 = 0`) and blue (`maxlife10 = 1`) points. Finally there appears to be four influential points in the Cooks distance plot; 10, 35, 40, and 50.
+
+
+```{r}
+(inf.id.4 = which(cooks.distance(step.sleep2)>0.25))
+
+glm.sleep2.final = glm(maxlife10 ~ brainweight + totalsleep + sleepexposureindex + predationindex, data = sleep[-inf.id.4], family = "binomial")
+```
+
 
 ### c)
 ```{r}
-
+summary(glm.sleep2.final)
 ```
+```{r}
+round(exp(glm.sleep2.final$coefficients),3)
+```
+
+
 **Observation:**
+As our final model is $\log(p/1-p)$ = `-6.16387` + `0.06018`\*`brainweight` + `0.35985`\*`totalsleep` + `4.42111`\*`sleepexposureindex` + `-3.36917`\*`predationindex` we can compare it to the output of the Odds Ratios.
+
+The odds of a species maximum lifespan being at least 10 years increases by a fact of `1.062` with every unit increase in `brainweight`.
+
+Similary if we assume all other variables remain constant the odds of liver disease increase by a factor of the following,
+
+* odds of a species maximum lifespan being at least 10 years increase by a factor of `1.433` with a one unit increase in `totalsleep`
+* odds of a species maximum lifespan being at least 10 years increase by a factor of `83.188` with a one unit increase in `sleepexposureindex`
+* odds of a species maximum lifespan being at least 10 years decrease by a factor of `0.034` with a one unit decrease in `predationindex`
+
+
