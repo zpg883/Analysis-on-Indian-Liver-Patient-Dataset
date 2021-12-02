@@ -1,7 +1,7 @@
 ---
 title: "STA 6443 HW4"
 author: "Hannah Haley & Richard Tarbell"
-date: "11/22/2021"
+date: "12/01/2021"
 output: html_document
 ---
 
@@ -17,12 +17,12 @@ sleep <- read.csv("data/sleep.csv")
 ```
 
 
-## **Exercise 1**
+## Exercise 1
 
 The liver data set is a subset of the ILPD (Indian Liver Patient Dataset) data set. It contains the first 10 variables described on the UCI Machine Learning Repository and a LiverPatient variable (indicating whether or not the individual is a liver patient. People with active liver disease are coded as LiverPatient=1 and people without disease are coded LiverPatient=0) for adults in the data set. Adults here are defined to be individuals who are at least 18 years of age. It is possible that there will be different significant predictors of being a liver patient for 
 adult females and adult males.
 
-### **a)**
+### a)
 For only females in the data set, find and specify the best set of predictors via stepwise selection with AIC 
 criteria for a logistic regression model predicting whether a female is a liver patient. 
 NOTE: Specifying the full model using “LiverPatient~., data=…” will give an error message (due to only one 
@@ -41,7 +41,9 @@ stepwise.Female <- step(glm.full.female, scope = list(upper=glm.full.female), di
 summary(stepwise.Female)
 ```
 
-### **b)** Comment on the significance of parameter estimates under significance level alpha=0.1, what HosmerLemeshow’s test tells us about goodness of fit, and point out any issues with diagnostics by checking 
+### b)
+
+Comment on the significance of parameter estimates under significance level alpha=0.1, what HosmerLemeshow’s test tells us about goodness of fit, and point out any issues with diagnostics by checking 
 residual plots and cook’s distance plot (with cut-off 0.25).
 
 **Comments:**
@@ -77,9 +79,9 @@ plot(stepwise.Female, which = 4, id.n = 5)
 (inf.id=which(cooks.distance(stepwise.Female)>0.25))
 ```
 **Observation:**
-There is no observation with a Cook's distance larger than `0.25`. 
+There is no observation with a Cook's distance larger than `0.25.` 
 
-### **c)**
+### c)
 Interpret relationships between predictors in the final model and the odds of an adult female being a liver 
 patient. (based on estimated Odds Ratio). 
 NOTE: stepwise selection with AIC criteria can be performed by default step() function in R.
@@ -97,35 +99,35 @@ round(OR, 3)
 2. As *Aspartate* increases by `0.01106` the odds of *Aspartate* increases by exp=`1.011`
 3. Female patients with *DB* or *Aspartate* are more likely to have liver disease that is active.
 
-## **Exercise 2:**
+## Exercise 2:
 Repeat exercise 1 for males. In addition to the previous questions, also d) comment on how the models for adult 
 females and adult males differ. Use significance level alpha=0.1
 
 NOTE: You will get an error message “glm.fit: fitted probabilities numerically 0 or 1 occurred” for this run. Ignore this and use the result for the interpretation. I will explain what this error means in Week 14 videos.
 
-**a)**
+### a)
 ```{r}
 
 ```
-**b)**
+### b)
 ```{r}
 
 ```
-**c)**
+### c)
 ```{r}
 
 ```
-**d)**
+### d)
 Comment on how the models for adult 
 females and adult males differ. Use significance level alpha=0.1
 **Comment:**
 
-## **Exercise 3:**
+## Exercise 3:
 Use the sleep data set which originates from http://lib.stat.cmu.edu/datasets/sleep. maxlife10 is 0 if the species maximum life span is less than 10 years and 1 if its maximum life span is greater than or equal to 10 years.
 Consider finding the best logistic model for predicting the probability that a species' maximum lifespan will be at least 10 years. Consider all 6 variables as candidates (do not include species) and two index variables of them are categorical in nature. Treat two index variables as categorical variables (e.g. ignore the fact that they are 
 ordinal). Use significance level alpha=0.1
 
-### **a)**
+### a)
 First find and specify the best set of predictors via stepwise selection with AIC criteria.
 ```{r, warning=FALSE}
 str(sleep)
@@ -142,7 +144,8 @@ summary(step.sleep1)
 **Observation:**
 Significant predictor is *sleepexposure* because it has p-values below the `0.1` significance level.
 
-### **b)**
+### b)
+
 Comment on the significance of parameter estimates, what Hosmer-Lemeshow’s test tells us about 
 goodness of fit, and point out any issues with diagnostics by checking residual plots and cook’s distance plot. Do not remove influential points but just make comments on suspicious observations.
 
@@ -155,20 +158,62 @@ hoslem.test(step.sleep1$y, fitted(step.sleep1), g=10)
 **Observation:**
 Based on the Hosmer goodness of fit test, the p-value is `0.5324` which falls above the `0.1` significance level making the model adequate. 
 ```{r}
-#plots and cook's distance
+resid.d<-residuals(step.sleep1, type = "deviance")
+resid.p<-residuals(step.sleep1, type = "pearson")
+std.res.d<-residuals(step.sleep1, type = "deviance")/sqrt(1 - hatvalues(step.sleep1)) # standardized deviance residuals
+std.res.p <-residuals(step.sleep1, type = "pearson")/sqrt(1 - hatvalues(step.sleep1)) # standardized pearson residuals
+
+par(mfrow=c(1,2))
+plot(std.res.d[step.sleep1$model$maxlife10==0], col = "red", ylim = c(-3.5,3.5), ylab = "std. deviance residuals", xlab = "ID")
+points(std.res.d[step.sleep1$model$maxlife10==1], col = "blue")
+
+plot(std.res.p[step.sleep1$model$maxlife10==0], col = "red", ylim = c(-3.5,3.5), ylab = "std. Pearson residuals", xlab = "ID")
+points(std.res.p[step.sleep1$model$maxlife10==1], col = "blue")
+```
+```{r}
+plot(step.sleep1, which = 4, id.n = 5)
+```
+```{r}
+(inf.id=which(cooks.distance(step.sleep1)>0.25))
 ```
 
-### **c)**
+**Observation:**
+1. Diagnostic plots: The Deviance Residual and Pearson Residual red plots do not follow a linearity line. Both appear to have values scattered and follow no pattern. As a result, this does not violate any linearity assumption. 
+2. Cook's distance: There are two values, `35` and `40` above the Cook's distance point of `0.25.` 
+
+### c)
+
 Interpret what the model tells us about relationships between the predictors and the odds of a species' 
 maximum lifespan being at least 10 years.
 NOTE: stepwise selection with BIC criteria can be performed by step() function by adding an option k=log(n), where n is a sample size. No need to refit the model with only significant variables. Just use the final model from step() function, and for part (b), make comments based on this. But, for part (c), interpret the Odds Ratio only for significant level and no need to interpret other insignificant ones.
 ```{r}
+glm.sleep.final = glm(maxlife10 ~ brainweight + totalsleep + as.factor(predationindex) + as.factor(sleepexposureindex), data = sleep[-inf.id], family = binomial)
+
+summary(glm.sleep.final)
 
 ```
+```{r}
+round(exp(glm.sleep.final$coefficients),3)
+```
+**Observation:**
+Based on the Odds Ratio, *sleepexposure2* has a value of `1.480500e+02.` Therefore, animals with a maxlife of Level 2 has a more likely chance to live past the maximum lifespan of 10yrs.  
 
-## **Exercise 4:**
+## Exercise 4:
 The index variables in the data set are ordinal, meaning they are categorical and they have a natural ordering. If we treat an index variable as a continuous variable, this will imply a linear change as the index changes. Repeat Exercise 3 by treating two index variables as continuous variables. Use significance level alpha=0.1
+
+##a)
 ```{r}
 
 ```
+**Observation:**
+### b)
+```{r}
 
+```
+**Observation:**
+
+### c)
+```{r}
+
+```
+**Observation:**
