@@ -1,7 +1,7 @@
 ---
 title: "STA 6443 HW4"
 author: "Hannah Haley & Richard Tarbell"
-date: "12/01/2021"
+date: "12/03/2021"
 output: html_document
 ---
 
@@ -112,7 +112,7 @@ glm.null.male = glm(LiverPatient ~ 1, data = liverMale, family = "binomial")
 glm.full.male = glm(LiverPatient ~ Age + TB + DB + Alkphos + Alamine + Aspartate + TP + ALB, data=liverMale, family = "binomial")
 ```
 
-```{r}
+```{r, warning=FALSE}
 stepwise.Male <- step(glm.null.male, scope = list(upper=glm.full.male),
                       direction="both", test="Chisq", trace = F)
 summary(stepwise.Male)
@@ -153,7 +153,7 @@ glm.male.final = glm(LiverPatient ~ DB + Alamine + Age + Alkphos, data = liverMa
 plot(glm.male.final, which = 4, id.n=5 )
 ```
 **Observation**
-With our Hosmer-Lemeshow test we receieved a p-value greater than our significance level of 0.1, which means we dod not reject H$_{0}$ and we assume our model is adequate. Now looking at our residual plots there is a parallel pattern, which implies there is a similar esitmated probababilities for all observations. Finally in the cooks plot we do see one observation with a Cook's distance larger than 0.25, observation 86.
+With our Hosmer-Lemeshow test we receieved a p-value greater than our significance level of `0.1`, which means we dod not reject H$_{0}$ and we assume our model is adequate. Now looking at our residual plots there is a parallel pattern, which implies there is a similar estimated probabilities for all observations. Finally in the cooks plot we do see one observation with a Cook's distance larger than `0.25`, observation `86.`
 
 
 ### c)
@@ -179,7 +179,7 @@ Similary if we assume all other variables remain constant the odds of liver dise
 ### d)
 Comment on how the models for adult females and adult males differ. Use significance level alpha=0.1
 **Comment:**
-When comparing the models for females and males we note that the females only have two significant predictors (`DB` and `Aspartate`) while the males have four significant predictors (`DB`, `Alamine`, `Age`, and `Alkphos`). With each of these predictors increasing the odds of a patient having liver disease it may be easier to predict when a male is at risk easier than a female, simply because of the amount of predictors used.
+When comparing the models for females and males we note that the females only have two significant predictors (*DB* and *Aspartate*) while the males have four significant predictors (*DB*, *Alamine*, *Age*, and *Alkphos*). With each of these predictors increasing the odds of a patient having liver disease it may be easier to predict when a male is at risk easier than a female, simply because of the amount of predictors used.
 
 
 
@@ -263,7 +263,7 @@ Based on the Odds Ratio, *sleepexposure2* has a value of `1.480500e+02.` Therefo
 The index variables in the data set are ordinal, meaning they are categorical and they have a natural ordering. If we treat an index variable as a continuous variable, this will imply a linear change as the index changes. Repeat Exercise 3 by treating two index variables as continuous variables. Use significance level alpha=0.1
 
 ###a)
-```{r}
+```{r, warning=FALSE}
 glm.null.sleep2 <- glm(maxlife10 ~ 1, data = sleep, family = "binomial")
 
 glm.full.sleep2 <- glm(maxlife10 ~ bodyweight+brainweight+totalsleep+gestationtime
@@ -306,7 +306,7 @@ plot(step.sleep2, which=4, id.n=5)
 ```
 
 
-**Observation:** Based on the Hosmer-Lemeshow test our model does appear to be adequate since the p-value is >0.1 and we do not have enough significant. The residual plots show overlap in the red (`maxlife10 = 0`) and blue (`maxlife10 = 1`) points. Finally there appears to be four influential points in the Cooks distance plot; 10, 35, 40, and 50.
+**Observation:** Based on the Hosmer-Lemeshow test our model does appear to be adequate since the p-value is >0.1 and we do not have enough significant. The residual plots show overlap in the red (`maxlife10 = 0`) and blue (`maxlife10 = 1`) points. Finally there appears to be four influential points in the Cooks distance plot; `10, 35, 40,` and `50`.
 
 
 ```{r}
